@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ghép Robot Y Tế</title>
+<title>Robot Y Tế</title>
 
 <style>
 body{
@@ -76,9 +76,17 @@ font-weight:bold;
 
 .check{background:#4CAF50;color:white}
 .reset{background:#f44336;color:white}
-.shuffle{background:#2196F3;color:white}
-
 .center{text-align:center}
+
+/* THANH NHẠC */
+.musicBox{
+position:fixed;
+bottom:10px;
+right:10px;
+background:#1c2a4a;
+padding:8px 12px;
+border-radius:10px;
+}
 </style>
 </head>
 
@@ -89,7 +97,7 @@ font-weight:bold;
 <b>📖 Hướng dẫn:</b><br>
 1️⃣ Kéo <b>ảnh robot</b> vào đúng tên robot ở giữa.<br>
 2️⃣ Kéo <b>nhiệm vụ</b> vào đúng robot.<br>
-3️⃣ Mỗi ô đúng được <b>10 điểm</b>.<br>
+3️⃣ Mỗi câu đúng = <b>10 điểm</b>.<br>
 4️⃣ Nhấn <b>Kiểm tra</b> để xem điểm.<br>
 👉 Kéo gần mép màn hình sẽ tự cuộn
 </div>
@@ -101,49 +109,57 @@ font-weight:bold;
 </div>
 
 <div class="center">
-<button class="shuffle" onclick="shuffle()">🔀 Xáo ảnh</button>
-<button class="reset" onclick="location.reload()">🔄 Reset</button>
 <button class="check" onclick="check()">✅ Kiểm tra</button>
+<button class="reset" onclick="location.reload()">🔄 Reset</button>
+</div>
+
+<!-- NHẠC NỀN -->
+<audio id="bgMusic" src="nhacnen.mp3" loop></audio>
+
+<!-- CHỈNH ÂM LƯỢNG -->
+<div class="musicBox">
+🎵 Âm lượng
+<input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
 </div>
 
 <script>
 
-// ===== DATA CỦA ANH =====
-const ROBOTS = [
-{ id:"r1",name:"Robot khử khuẩn",task:"Phun thuốc sát trùng trong phòng bệnh",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-1.png"},
-{ id:"r2",name:"Robot phẫu thuật",task:"Hỗ trợ bác sĩ mổ chính xác",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-2.png"},
-{ id:"r3",name:"Robot y tá",task:"Mang thuốc, hồ sơ đến từng phòng",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-3.png"},
-{ id:"r4",name:"Robot đo thân nhiệt",task:"Đo nhiệt độ từ xa cho bệnh nhân",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-4.png"},
-{ id:"r5",name:"Robot cứu trợ từ xa",task:"Hỗ trợ bệnh nhân tại vùng cách ly",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-5.png"},
-{ id:"r6",name:"Robot vận chuyển vật tư",task:"Đưa vật tư y tế đến các phòng ban",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-6.png"},
-{ id:"r7",name:"Robot hỗ trợ tiêm",task:"Chuẩn bị và đưa vaccine cho bác sĩ",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-7.png"},
-{ id:"r8",name:"Robot gọi tên bệnh nhân",task:"Tự động gọi bệnh nhân vào khám",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-8.png"},
-{ id:"r9",name:"Robot khử trùng hành lang",task:"Di chuyển và làm sạch khu vực hành lang",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-9.png"},
-{ id:"r10",name:"Robot hướng dẫn thông minh",task:"Chỉ đường và cung cấp thông tin cho người bệnh",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-10.png"},
+// ===== DATA =====
+const ROBOTS=[
+{id:"r1",name:"Robot khử khuẩn",task:"Phun thuốc sát trùng trong phòng bệnh",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-1.png"},
+{id:"r2",name:"Robot phẫu thuật",task:"Hỗ trợ bác sĩ mổ chính xác",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-2.png"},
+{id:"r3",name:"Robot y tá",task:"Mang thuốc, hồ sơ đến từng phòng",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-3.png"},
+{id:"r4",name:"Robot đo thân nhiệt",task:"Đo nhiệt độ từ xa",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-4.png"},
+{id:"r5",name:"Robot cứu trợ",task:"Hỗ trợ bệnh nhân cách ly",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-5.png"},
+{id:"r6",name:"Robot vận chuyển",task:"Đưa vật tư y tế",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-6.png"},
+{id:"r7",name:"Robot hỗ trợ tiêm",task:"Chuẩn bị vaccine",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-7.png"},
+{id:"r8",name:"Robot gọi tên",task:"Gọi bệnh nhân vào khám",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-8.png"},
+{id:"r9",name:"Robot khử trùng hành lang",task:"Làm sạch hành lang",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-9.png"},
+{id:"r10",name:"Robot hướng dẫn",task:"Chỉ đường cho người bệnh",img:"https://uploads.onecompiler.io/44d6tguj7/44d6tewqh/robot-10.png"},
 ];
 
 // ===== TẠO ẢNH =====
 ROBOTS.forEach(r=>{
-let div=document.createElement("div");
-div.className="card";
-div.id="img_"+r.id;
-div.dataset.id=r.id;
-div.draggable=true;
-div.innerHTML=`<img src="${r.img}"><b>${r.name}</b>`;
-div.ondragstart=e=>e.dataTransfer.setData("id",div.id);
-images.appendChild(div);
+let d=document.createElement("div");
+d.className="card";
+d.id="img_"+r.id;
+d.dataset.id=r.id;
+d.draggable=true;
+d.innerHTML=`<img src="${r.img}"><b>${r.name}</b>`;
+d.ondragstart=e=>e.dataTransfer.setData("id",d.id);
+images.appendChild(d);
 });
 
-// ===== TẠO NHIỆM VỤ =====
+// ===== TẠO TASK =====
 ROBOTS.forEach(r=>{
-let div=document.createElement("div");
-div.className="task";
-div.id="task_"+r.id;
-div.dataset.id=r.id;
-div.innerText=r.task;
-div.draggable=true;
-div.ondragstart=e=>e.dataTransfer.setData("id",div.id);
-tasks.appendChild(div);
+let d=document.createElement("div");
+d.className="task";
+d.id="task_"+r.id;
+d.dataset.id=r.id;
+d.innerText=r.task;
+d.draggable=true;
+d.ondragstart=e=>e.dataTransfer.setData("id",d.id);
+tasks.appendChild(d);
 });
 
 // ===== ROBOT BOX =====
@@ -161,26 +177,23 @@ robots.appendChild(box);
 
 // ===== AUTO SCROLL =====
 document.addEventListener("dragover",e=>{
-const y=e.clientY;
-const h=window.innerHeight;
-if(y<80) window.scrollBy(0,-20);
-if(y>h-80) window.scrollBy(0,20);
+if(e.clientY<80) window.scrollBy(0,-20);
+if(e.clientY>window.innerHeight-80) window.scrollBy(0,20);
 });
 
 // ===== DROP =====
-document.querySelectorAll(".drop").forEach(zone=>{
-zone.ondragover=e=>e.preventDefault();
-
-zone.ondrop=e=>{
+document.querySelectorAll(".drop").forEach(z=>{
+z.ondragover=e=>e.preventDefault();
+z.ondrop=e=>{
 e.preventDefault();
 let id=e.dataTransfer.getData("id");
 let el=document.getElementById(id);
 
-if(zone.dataset.type=="img" && !id.startsWith("img")) return;
-if(zone.dataset.type=="task" && !id.startsWith("task")) return;
+if(z.dataset.type=="img" && !id.startsWith("img")) return;
+if(z.dataset.type=="task" && !id.startsWith("task")) return;
 
-zone.innerHTML="";
-zone.appendChild(el);
+z.innerHTML="";
+z.appendChild(el);
 };
 });
 
@@ -193,23 +206,26 @@ let id=box.dataset.id;
 let img=box.querySelector('[data-type="img"] .card');
 let task=box.querySelector('[data-type="task"] .task');
 
-if(img && task){
-if(img.dataset.id==id && task.dataset.id==id){
+if(img && task && img.dataset.id==id && task.dataset.id==id){
 correct++;
-}
 }
 });
 
 alert(`🎉 Đúng ${correct}/${ROBOTS.length}\n🏆 Điểm: ${correct*10}`);
 }
 
-// ===== SHUFFLE =====
-function shuffle(){
-let arr=[...images.children];
-arr.sort(()=>Math.random()-0.5);
-arr.forEach(el=>images.appendChild(el));
-}
+// ===== NHẠC NỀN =====
+document.addEventListener("click",function start(){
+let m=document.getElementById("bgMusic");
+m.volume=0.5;
+m.play();
+document.removeEventListener("click",start);
+});
 
+volume.oninput=()=>{
+bgMusic.volume=volume.value;
+};
 </script>
+
 </body>
 </html>
